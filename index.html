@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KingIT Chronicles — Follow the Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #080808;
+    --gold: #E8A87C;
+    --gold-dim: #A06A3E;
+    --white: #F5F0E8;
+    --muted: #6B6560;
+    --border: rgba(232,168,124,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* GLOW */
+  .glow {
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(232,168,124,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* LAYOUT */
+  .page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+  }
+
+  /* TOP TAG */
+  .top-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.1s;
+  }
+
+  .top-tag::before,
+  .top-tag::after {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--gold-dim);
+  }
+
+  /* CROWN */
+  .crown-wrap {
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
+
+  .crown-wrap svg {
+    width: 64px;
+    height: 64px;
+    filter: drop-shadow(0 0 20px rgba(232,168,124,0.3));
+  }
+
+  /* HEADLINE */
+  .headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 8vw, 72px);
+    font-weight: 900;
+    line-height: 1.05;
+    text-align: center;
+    max-width: 720px;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.3s;
+    letter-spacing: -0.02em;
+  }
+
+  .headline em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .headline-sub {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 4vw, 28px);
+    font-weight: 700;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.4s;
+  }
+
+  /* DIVIDER */
+  .divider {
+    width: 48px;
+    height: 1px;
+    background: var(--gold-dim);
+    margin: 0 auto 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.5s;
+  }
+
+  /* DESCRIPTION */
+  .description {
+    font-size: 17px;
+    color: rgba(245,240,232,0.6);
+    text-align: center;
+    max-width: 480px;
+    margin-bottom: 48px;
+    font-weight: 300;
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.5s;
+  }
+
+  .description strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  /* PROOF PILLS */
+  .proof-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.6s;
+  }
+
+  .proof-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(232,168,124,0.08);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: rgba(245,240,232,0.7);
+  }
+
+  .proof-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  /* FORM WRAPPER */
+  .form-wrap {
+    width: 100%;
+    max-width: 480px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.7s;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    background: rgba(232,168,124,0.03);
+    backdrop-filter: blur(10px);
+    margin-bottom: 32px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* CUSTOM FORM */
+  .custom-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .custom-form input[type="email"] {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(232,168,124,0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .custom-form input[type="email"]::placeholder {
+    color: rgba(245,240,232,0.3);
+  }
+
+  .custom-form input[type="email"]:focus {
+    border-color: var(--gold);
+  }
+
+  .custom-form button {
+    width: 100%;
+    background: var(--gold);
+    color: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 24px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .custom-form button:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  .custom-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* THANK YOU STATE */
+  .thank-you {
+    display: none;
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .thank-you .ty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .thank-you h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .thank-you p {
+    font-size: 14px;
+    color: rgba(245,240,232,0.55);
+    line-height: 1.65;
+  }
+
+  .thank-you .ty-line {
+    width: 32px;
+    height: 2px;
+    background: var(--gold);
+    margin: 12px auto;
+    border-radius: 2px;
+  }
+
+  .thank-you .ty-gold {
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  /* WHAT YOU GET */
+  .what-you-get {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.8s;
+  }
+
+  .get-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .get-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .get-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: rgba(245,240,232,0.65);
+    line-height: 1.55;
+  }
+
+  .get-list li .check {
+    color: var(--gold);
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* FOOTER */
+  .footer {
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.9s;
+    text-align: center;
+  }
+
+  .footer p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .footer .handle {
+    font-size: 13px;
+    color: var(--gold-dim);
+    font-weight: 500;
+    margin-top: 8px;
+  }
+
+  /* SCROLL LINE */
+  .scroll-line {
+    position: fixed;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.3;
+  }
+
+  .scroll-line span {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    writing-mode: vertical-rl;
+  }
+
+  .scroll-line::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+  }
+
+  @media (max-width: 768px) {
+    .scroll-line { display: none; }
+    .form-wrap { padding: 24px 20px; }
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<div class="scroll-line">
+  <span>KingIT Chronicles</span>
+</div>
+
+<main class="page">
+
+  <div class="top-tag">Weekly Newsletter</div>
+
+  <!-- CROWN SVG -->
+  <div class="crown-wrap">
+    <svg viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 65 L15 30 L35 50 L50 10 L65 50 L85 30 L90 65 Z" stroke="#E8A87C" stroke-width="3" stroke-linejoin="round" fill="none"/>
+      <line x1="8" y1="72" x2="92" y2="72" stroke="#E8A87C" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="50" cy="10" r="4" fill="#E8A87C"/>
+      <circle cx="15" cy="30" r="3" fill="#E8A87C"/>
+      <circle cx="85" cy="30" r="3" fill="#E8A87C"/>
+    </svg>
+  </div>
+
+  <!-- HEADLINE -->
+  <h1 class="headline">One Guy.<br><em>Building in Public.</em></h1>
+  <p class="headline-sub">No safety net. No guarantees.</p>
+
+  <div class="divider"></div>
+
+  <!-- DESCRIPTION -->
+  <p class="description">
+    Every week I document the <strong>real story</strong> of building a copywriting agency from zero — the wins, the silence after you hit send, the late nights, and every lesson that only comes from getting it wrong first.
+  </p>
+
+  <!-- PROOF PILLS -->
+  <div class="proof-row">
+    <div class="proof-pill"><span class="dot"></span>Sent every week</div>
+    <div class="proof-pill"><span class="dot"></span>No fluff. No filler.</div>
+    <div class="proof-pill"><span class="dot"></span>Free forever</div>
+  </div>
+
+  <!-- BEEHIIV FORM + CUSTOM THANK YOU -->
+  <div class="form-wrap">
+    <p class="form-label">Pull up a chair →</p>
+
+    <!-- Beehiiv embed handles the actual subscription -->
+    <div id="beehiivFormContainer">
+      <script async src="https://subscribe-forms.beehiiv.com/v3/loader.js" data-beehiiv-form="402ae419-2e5c-4950-85dd-7894d339e8a9"></script>
+    </div>
+
+    <!-- Thank you message — shown after form submit -->
+    <div class="thank-you" id="thankYou">
+      <div class="ty-icon">👑</div>
+      <div class="ty-line"></div>
+      <h3>You're in!</h3>
+      <p>Check your inbox to confirm your spot ✨<br>The journey is just getting started.</p>
+    </div>
+  </div>
+
+  <script>
+    // Watch for Beehiiv form submission by detecting URL hash change or form submit event
+    function checkForSuccess() {
+      // Beehiiv redirects or modifies the page on success — watch for it
+      const observer = new MutationObserver(function() {
+        const successEl = document.querySelector('.beehiiv-embed-success, [data-beehiiv-success], .subscription-success');
+        if (successEl) {
+          showThankYou();
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Also intercept form submit inside the Beehiiv iframe container
+      setTimeout(function() {
+        const container = document.getElementById('beehiivFormContainer');
+        if (container) {
+          const form = container.querySelector('form');
+          if (form) {
+            form.addEventListener('submit', function() {
+              setTimeout(showThankYou, 1500);
+            });
+          }
+        }
+      }, 3000);
+    }
+
+    function showThankYou() {
+      document.getElementById('beehiivFormContainer').style.display = 'none';
+      const ty = document.getElementById('thankYou');
+      ty.style.display = 'block';
+      ty.style.animation = 'fadeUp 0.6s ease forwards';
+    }
+
+    // Listen for postMessage from Beehiiv iframe
+    window.addEventListener('message', function(event) {
+      if (event.data && (
+        event.data.type === 'beehiiv:subscribe:success' ||
+        event.data.type === 'subscribe_success' ||
+        (typeof event.data === 'string' && event.data.includes('success'))
+      )) {
+        showThankYou();
+      }
+    });
+
+    checkForSuccess();
+  </script>
+
+  <!-- WHAT YOU GET -->
+  <div class="what-you-get">
+    <p class="get-label">What's inside every issue</p>
+    <ul class="get-list">
+      <li><span class="check">✦</span><span>The honest truth about what happened that week — good and bad</span></li>
+      <li><span class="check">✦</span><span>Copywriting lessons learned from real client work and outreach</span></li>
+      <li><span class="check">✦</span><span>Tools, frameworks, and systems I'm actually using to build</span></li>
+      <li><span class="check">✦</span><span>The kind of newsletter that makes you feel less alone in the grind</span></li>
+    </ul>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>No spam. Unsubscribe anytime. Written by a real human.</p>
+    <p class="handle">— KingIT</p>
+  </div>
+
+</main>
+
+</body>
+</html>
